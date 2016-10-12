@@ -1,0 +1,64 @@
+<project name="Needlog" default="release">
+	
+	<taskdef name="jsmoothgen" classname="net.charabia.jsmoothgen.ant.JSmoothGen" classpath="lib/jsmoothgen-ant.jar"/>
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile" depends="clean">
+        <mkdir dir="build/classes"/>
+    	<path id="libraries">
+    		<fileset dir="lib" includes="*.jar"/>
+    	</path>
+        <javac srcdir="src" classpathref="libraries" destdir="build/classes" target="1.5"/>
+    </target>
+
+    <target name="build-jar" depends="compile">
+    	<copy todir="build/classes">
+    		<fileset dir="src">
+    			<exclude name="**/*.java"/>
+    		</fileset>
+    	</copy>
+    	<unzip dest="build/classes">
+    	    <patternset>
+    	        <exclude name="META-INF/**"/>
+    	    </patternset>
+    	    <fileset dir=".">
+    	        <include name="lib/**/lucene-core*.jar"/>
+    	    </fileset>
+    	</unzip>
+        <mkdir dir="build/release"/>
+        <jar destfile="build/release/Needlog.jar" basedir="build/classes" level="9">
+            <manifest>
+                <attribute name="Main-Class" value="org.postronic.h3.needlog.Needlog"/>
+            </manifest>
+        </jar>
+    </target>
+	
+	<target name="build-exe" depends="build-jar">
+		<echo message="Building executable file"/>
+		<jsmoothgen project="resources/Needlog.jsmooth" skeletonroot="resources/skeletons"/>
+		<echo message="Updating icon resource [A]"/>
+		<exec executable="resources/Resourcer">
+			<arg value="-op:upd"/>
+		    <arg value="-src:build\release\Needlog.exe"/>
+		    <arg value="-type:icon"/>
+			<arg value="-name:A"/>
+			<arg value="-lang:1033"/>
+			<arg value="-file:resources\Needlog.ico"/>
+		</exec>
+		<echo message="Removing icon resource [A2]"/>
+		<exec executable="resources/Resourcer">
+			<arg value="-op:del"/>
+		    <arg value="-src:build\release\Needlog.exe"/>
+		    <arg value="-type:icon"/>
+			<arg value="-name:A2"/>
+			<arg value="-lang:1033"/>
+		</exec>
+	</target>
+
+    <target name="release" depends="build-jar, build-exe">
+    </target>
+
+</project>
